@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rate Limit Tester</title>
+    <style>
+        :root {
+            --bg: #0f172a; --text: #f8fafc; --card: #1e293b;
+            --primary: #8b5cf6; --primary-hover: #7c3aed;
+            --success: #10b981; --error: #ef4444;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
+        body { background: var(--bg); color: var(--text); padding: 40px; display: flex; justify-content: center; min-height: 100vh; }
+        .container { background: var(--card); padding: 40px; border-radius: 16px; width: 100%; max-width: 600px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); }
+        h1 { margin-bottom: 20px; color: var(--primary); text-align: center; }
+        p { text-align: center; color: #94a3b8; margin-bottom: 30px; }
+        
+        .controls { display: flex; gap: 15px; margin-bottom: 30px; }
+        .btn { flex: 1; padding: 16px; border: none; border-radius: 8px; font-weight: bold; font-size: 1.1rem; cursor: pointer; transition: 0.2s; color: white; }
+        .btn-protected { background: var(--primary); }
+        .btn-protected:hover { background: var(--primary-hover); }
+        .btn-public { background: #475569; }
+        .btn-public:hover { background: #334155; }
+        .btn:active { transform: scale(0.98); }
+
+        .log-container { background: #000; border-radius: 8px; padding: 15px; height: 300px; overflow-y: auto; font-family: monospace; font-size: 0.9rem; border: 1px solid #334155; }
+        .log-entry { padding: 4px 0; border-bottom: 1px dashed #333; }
+        .log-success { color: var(--success); }
+        .log-error { color: var(--error); font-weight: bold; }
+        .log-time { color: #64748b; font-size: 0.8rem; margin-right: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🛡️ API Rate Limiter</h1>
+        <p>Limit is set to <strong>5 requests per 10 seconds</strong>.</p>
+
+        <div class="controls">
+            <button class="btn btn-protected" id="btn-secure">Hit Protected API</button>
+            <button class="btn btn-public" id="btn-public">Hit Public API</button>
+        </div>
+
+        <div class="log-container" id="logger">
+            <!-- Logs appear here -->
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:8000';
+        const logger = document.getElementById('logger');
+
+        function appendLog(message, isError) {
+            const time = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.className = `log-entry ${isError ? 'log-error' : 'log-success'}`;
+            div.innerHTML = `<span class="log-time">[${time}]</span> ${message}`;
+            
+            logger.appendChild(div);
+            logger.scrollTop = logger.scrollHeight;
+        }
+
+        async function fetchAPI(endpoint) {
+            try {
+                const res = await fetch(`${API_BASE}${endpoint}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    appendLog(`${res.status} OK: ${data.message}`, false);
+                } else if (res.status === 429) {
+                    const data = await res.json();
+                    appendLog(`429 ERROR: ${data.detail}`, true);
+                } else {
+                    appendLog(`ERROR: Unexpected status ${res.status}`, true);
+                }
+            } catch (err) {
+                appendLog(`NETWORK ERROR: ${err.message}`, true);
+            }
+        }
+
+        document.getElementById('btn-secure').addEventListener('click', () => {
+            fetchAPI('/api/data');
+        });
+
+        document.getElementById('btn-public').addEventListener('click', () => {
+            fetchAPI('/api/public');
+        });
+    </script>
+</body>
+</html>
