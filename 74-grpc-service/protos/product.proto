@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package product;
+
+// The Product message represents a single product entity
+message Product {
+  int32 id = 1;
+  string name = 2;
+  float price = 3;
+  bool in_stock = 4;
+}
+
+// Request messages
+message CreateProductRequest {
+  string name = 1;
+  float price = 2;
+}
+
+message GetProductRequest {
+  int32 id = 1;
+}
+
+message Empty {}
+
+// Response messages
+message ProductList {
+  repeated Product products = 1;
+}
+
+// The ProductService defines the available RPC methods
+service ProductService {
+  rpc CreateProduct (CreateProductRequest) returns (Product);
+  rpc GetProduct (GetProductRequest) returns (Product);
+  rpc ListProducts (Empty) returns (ProductList);
+}
