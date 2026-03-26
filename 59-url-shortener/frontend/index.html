@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeonLink - URL Shortener</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="background-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <main class="container">
+        <div class="glass-card">
+            <div class="logo">
+                <i class="fa-solid fa-link neon-text"></i>
+                <h1>NeonLink</h1>
+            </div>
+            
+            <p class="subtitle">Enter a long URL to make it short, sleek, and shareable.</p>
+            
+            <form id="shorten-form" class="input-group">
+                <input type="url" id="url-input" placeholder="https://verylongdomain.com/some/article..." required autocomplete="off">
+                <button type="submit" class="btn-primary">
+                    <span>Shorten</span>
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </button>
+            </form>
+
+            <div id="result-area" class="result-box hidden">
+                <p>Your short link is ready!</p>
+                <div class="short-url-container">
+                    <a href="#" id="short-url-display" target="_blank">http://localhost:8000/aB3</a>
+                    <button id="btn-copy" title="Copy to clipboard">
+                        <i class="fa-regular fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div id="error-message" class="error hidden"></div>
+        </div>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
