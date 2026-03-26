@@ -1,0 +1,3 @@
+A paragraph about computing! Modern computing has changed everything. The computing systems of today are vastly different from early computing devices. In computing, we write code, and that code controls the computing hardware. Programming languages exist solely for programming computing architectures.
+Python is wonderful. Python is designed for readability. When you write python, you write clear statements.
+The quick brown fox jumps over the lazy dog. Fox, fox, fox! The dog is asleep. The dog dreams of programming in python.
