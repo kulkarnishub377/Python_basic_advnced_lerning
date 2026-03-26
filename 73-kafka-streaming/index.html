@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kafka Real-Time Dashboard</title>
+    <style>
+        :root{--bg:#0c0a09;--card:#1c1917;--text:#fafaf9;--orange:#f97316;--green:#22c55e;--blue:#3b82f6;--purple:#a855f7;}
+        *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',sans-serif;}
+        body{background:var(--bg);color:var(--text);padding:30px;display:flex;flex-direction:column;align-items:center;}
+        .container{max-width:850px;width:100%;}
+        h1{text-align:center;color:var(--orange);margin-bottom:5px;}
+        p.sub{text-align:center;color:#a8a29e;margin-bottom:30px;}
+        .live{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--green);animation:pulse 1s infinite;}
+        @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+        .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-bottom:25px;}
+        .metric{background:var(--card);border:1px solid #292524;border-radius:12px;padding:20px;text-align:center;}
+        .metric .val{font-size:2.5rem;font-weight:bold;}
+        .metric .label{font-size:.85rem;color:#a8a29e;margin-top:4px;}
+        .m-pv .val{color:var(--blue);}
+        .m-cl .val{color:var(--purple);}
+        .m-pu .val{color:var(--green);}
+        .wide{grid-column:span 3;display:flex;justify-content:space-around;background:var(--card);border:1px solid #292524;border-radius:12px;padding:20px;}
+        .wide .stat{text-align:center;}
+        .wide .stat .val{font-size:1.8rem;font-weight:bold;color:var(--orange);}
+        .wide .stat .label{font-size:.8rem;color:#a8a29e;}
+        .status-bar{text-align:center;color:#78716c;font-size:.85rem;margin-top:15px;}
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1><span class="live"></span> Kafka Live Dashboard</h1>
+    <p class="sub">Real-time event metrics streamed through Apache Kafka</p>
+    <div class="grid">
+        <div class="metric m-pv"><div class="val" id="pv">0</div><div class="label">Page Views</div></div>
+        <div class="metric m-cl"><div class="val" id="cl">0</div><div class="label">Clicks</div></div>
+        <div class="metric m-pu"><div class="val" id="pu">0</div><div class="label">Purchases</div></div>
+        <div class="wide">
+            <div class="stat"><div class="val" id="rev">$0</div><div class="label">Total Revenue</div></div>
+            <div class="stat"><div class="val" id="eps">0</div><div class="label">Events/sec</div></div>
+        </div>
+    </div>
+    <div class="status-bar" id="status">Connecting to API...</div>
+</div>
+<script>
+    const API='http://127.0.0.1:8000';
+    async function poll(){
+        try{
+            const res=await fetch(`${API}/metrics`);
+            const d=await res.json();
+            document.getElementById('pv').textContent=d.page_views.toLocaleString();
+            document.getElementById('cl').textContent=d.clicks.toLocaleString();
+            document.getElementById('pu').textContent=d.purchases.toLocaleString();
+            document.getElementById('rev').textContent='$'+d.total_revenue.toLocaleString();
+            document.getElementById('eps').textContent=d.events_per_second;
+            document.getElementById('status').textContent='Live  |  Last poll: '+new Date().toLocaleTimeString();
+        }catch(e){document.getElementById('status').textContent='API offline: '+e.message;}
+    }
+    poll();
+    setInterval(poll,1000);
+</script>
+</body>
+</html>
