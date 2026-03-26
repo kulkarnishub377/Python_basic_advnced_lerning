@@ -1,0 +1,11 @@
+id,date,category,amount,region
+1,2023-10-01,Electronics,1200.50,North
+2,2023-10-02,Clothing,45.00,South
+3,2023-10-02,Electronics,800.00,East
+4,2023-10-03,Food,15.75,North
+5,2023-10-03,Clothing,120.00,West
+6,2023-10-04,Electronics,2300.00,North
+7,2023-10-05,Food,85.50,South
+8,2023-10-05,Office Supplies,450.25,East
+9,2023-10-06,Clothing,65.00,West
+10,2023-10-07,Office Supplies,120.00,North
