@@ -1,0 +1,20 @@
+[
+  {
+    "amount": 15.50,
+    "category": "Food",
+    "date": "2023-10-01",
+    "note": "Lunch"
+  },
+  {
+    "amount": 42.06,
+    "category": "Transport",
+    "date": "2023-10-02",
+    "note": "Gas"
+  },
+  {
+    "amount": 120.00,
+    "category": "Utilities",
+    "date": "2023-10-02",
+    "note": "Internet"
+  }
+]
