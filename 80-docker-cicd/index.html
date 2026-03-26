@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>CI/CD Architecture</title>
+    <style>
+        :root{--bg:#0f172a;--card:#1e293b;--text:#f1f5f9;--blue:#3b82f6;--green:#22c55e;--border:#334155;}
+        *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',sans-serif;}
+        body{background:var(--bg);color:var(--text);padding:30px;display:flex;flex-direction:column;align-items:center;}
+        .container{max-width:800px;width:100%;}
+        h1{text-align:center;color:var(--blue);margin-bottom:25px;}
+        .pipeline{display:flex;flex-direction:column;gap:0;}
+        .stage{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;}
+        .stage+.stage{margin-top:-1px;border-top-left-radius:0;border-top-right-radius:0;}
+        .stage:first-child{border-bottom-left-radius:0;border-bottom-right-radius:0;}
+        .stage:not(:first-child):not(:last-child){border-radius:0;}
+        .stage h3{color:var(--blue);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+        .stage .num{background:var(--blue);color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:bold;}
+        .stage p{color:#94a3b8;font-size:.9rem;line-height:1.5;}
+        .stage code{background:#000;padding:2px 6px;border-radius:4px;color:var(--green);font-size:.85rem;}
+        .arrow{text-align:center;color:var(--border);font-size:1.5rem;line-height:1;}
+        .info{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px;margin-top:25px;font-size:.9rem;color:#94a3b8;}
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>CI/CD Pipeline Architecture</h1>
+    <div class="pipeline">
+        <div class="stage">
+            <h3><span class="num">1</span> Developer Pushes Code</h3>
+            <p>You run <code>git push origin main</code>. GitHub receives the new commits and triggers the CI workflow.</p>
+        </div>
+        <div class="stage">
+            <h3><span class="num">2</span> GitHub Actions: Install & Test</h3>
+            <p>The <code>.github/workflows/test.yml</code> pipeline spins up Ubuntu, installs Python 3.11, runs <code>pip install -r requirements.txt</code>, and executes <code>pytest app/tests/ -v</code>.</p>
+        </div>
+        <div class="stage">
+            <h3><span class="num">3</span> Docker Build (Multi-Stage)</h3>
+            <p>The <code>Dockerfile</code> uses a two-stage build: Stage 1 installs dependencies, Stage 2 copies only the runtime artifacts into a slim image, reducing final size by up to 60%.</p>
+        </div>
+        <div class="stage">
+            <h3><span class="num">4</span> Docker Compose Orchestration</h3>
+            <p><code>docker-compose up</code> starts the FastAPI app container alongside a Redis container. Environment variables connect them automatically via Docker's internal DNS.</p>
+        </div>
+        <div class="stage">
+            <h3><span class="num">5</span> Production Ready</h3>
+            <p>The app serves on port 8000 with a built-in <code>/health</code> endpoint. Docker's HEALTHCHECK monitors it. If the process crashes, <code>restart: unless-stopped</code> brings it back.</p>
+        </div>
+    </div>
+    <div class="info">
+        <strong>Key files:</strong> <code>Dockerfile</code> (multi-stage image), <code>docker-compose.yml</code> (orchestration), <code>.github/workflows/test.yml</code> (CI pipeline), <code>app/tests/test_main.py</code> (unit tests)
+    </div>
+</div>
+</body>
+</html>
