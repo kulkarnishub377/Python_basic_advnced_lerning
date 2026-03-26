@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastAPI Cloud Engine</title>
+    <style>
+        :root {
+            --bg: #111827; --card-bg: #1f2937; --primary: #3b82f6; --primary-hover: #2563eb;
+            --text: #f9fafb; --text-muted: #9ca3af; --border: #374151;
+        }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text); padding: 40px 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { text-align: center; margin-bottom: 20px; color: #fff; }
+        p.desc { text-align: center; color: var(--text-muted); margin-bottom: 40px; }
+        
+        .upload-zone {
+            background: var(--card-bg); border: 2px dashed var(--border); border-radius: 12px;
+            padding: 60px 20px; text-align: center; cursor: pointer; transition: 0.3s;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px;
+        }
+        .upload-zone.dragover { border-color: var(--primary); background: rgba(59, 130, 246, 0.1); }
+        .upload-zone svg { width: 64px; height: 64px; fill: var(--text-muted); transition: 0.3s; }
+        .upload-zone.dragover svg { fill: var(--primary); }
+        .upload-zone input { display: none; }
+        .upload-zone button { background: var(--primary); color: #white; border: none; padding: 10px 24px; border-radius: 6px; color: white; cursor: pointer; font-weight: bold; }
+        .upload-zone button:hover { background: var(--primary-hover); }
+
+        .gallery { margin-top: 50px; }
+        .gallery h2 { margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .file-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 15px; text-align: center; word-break: break-all; }
+        .file-card img { max-width: 100%; max-height: 150px; object-fit: contain; margin-bottom: 10px; border-radius: 4px; }
+        .file-card a { color: var(--primary); text-decoration: none; font-size: 0.85rem; font-weight: bold; display: inline-block; margin-top: 10px; }
+        .file-card a:hover { text-decoration: underline; }
+
+        .loading { display: none; margin-top: 15px; color: var(--primary); font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>☁️ FastAPI Cloud Storage</h1>
+        <p class="desc">Drag and drop files to upload them to the server.</p>
+
+        <div class="upload-zone" id="drop-zone">
+            <svg viewBox="0 0 24 24"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"></path></svg>
+            <h3>Drag & Drop files here</h3>
+            <p>or</p>
+            <button onclick="document.getElementById('file-input').click()">Browse Files</button>
+            <input type="file" id="file-input" multiple>
+            <div class="loading" id="loader">Uploading...</div>
+        </div>
+
+        <div class="gallery">
+            <h2>Your Files</h2>
+            <div class="grid" id="file-grid">
+                <!-- File cards injected here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:8000';
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const loader = document.getElementById('loader');
+        const grid = document.getElementById('file-grid');
+
+        // Initial Load
+        fetchFiles();
+
+        // Drag and drop events
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false);
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            const files = e.dataTransfer.files;
+            handleFiles(files);
+        });
+
+        fileInput.addEventListener('change', function() {
+            handleFiles(this.files);
+        });
+
+        async function handleFiles(files) {
+            if (files.length === 0) return;
+            loader.style.display = 'block';
+
+            const formData = new FormData();
+            for (let i = 0; i < files.length; i++) {
+                formData.append('files', files[i]);
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/api/upload/multiple`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (res.ok) {
+                    fileInput.value = ''; // reset input
+                    fetchFiles(); // reload gallery
+                } else {
+                    alert('Upload failed!');
+                }
+            } catch (err) {
+                console.error("Upload error:", err);
+                alert('Connection error. Is Uvicorn running?');
+            } finally {
+                loader.style.display = 'none';
+            }
+        }
+
+        async function fetchFiles() {
+            try {
+                const res = await fetch(`${API_BASE}/api/list`);
+                const data = await res.json();
+                renderGallery(data.files);
+            } catch (err) { console.error("Error fetching file list", err); }
+        }
+
+        function renderGallery(files) {
+            grid.innerHTML = '';
+            if (files.length === 0) {
+                grid.innerHTML = '<p style="color:var(--text-muted); grid-column: 1/-1;">No files uploaded yet.</p>';
+                return;
+            }
+
+            // Reverse to show newest first
+            files.reverse().forEach(file => {
+                const fullUrl = `${API_BASE}${file.url}`;
+                
+                // Extremely simple check if it's an image based on extension
+                const isImage = file.filename.match(/\.(jpeg|jpg|gif|png|webp)$/i) != null;
+                const visual = isImage 
+                    ? `<img src="${fullUrl}" alt="File">` 
+                    : `<svg viewBox="0 0 24 24" style="width:48px; fill:var(--primary); margin: 20px auto;"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"/></svg>`;
+
+                const card = document.createElement('div');
+                card.className = 'file-card';
+                card.innerHTML = `
+                    ${visual}
+                    <p style="font-size: 0.8rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${file.filename}">${file.filename}</p>
+                    <a href="${fullUrl}" target="_blank">Download / View</a>
+                `;
+                grid.appendChild(card);
+            });
+        }
+    </script>
+</body>
+</html>
