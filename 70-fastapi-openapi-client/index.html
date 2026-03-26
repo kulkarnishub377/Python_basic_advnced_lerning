@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenAPI Codegen Visualizer</title>
+    <style>
+        :root {
+            --bg: #09090b; --card: #18181b; --text: #fafafa;
+            --primary: #10b981; --border: #27272a;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+        body { background: var(--bg); color: var(--text); padding: 40px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 900px; width: 100%; }
+        h1 { margin-bottom: 20px; color: var(--primary); text-align: center; }
+        p.subtitle { text-align: center; color: #a1a1aa; margin-bottom: 40px; }
+        
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .panel { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.5); }
+        .panel h3 { margin-bottom: 15px; font-size: 1.1rem; color: #e4e4e7; border-bottom: 1px dashed var(--border); padding-bottom: 10px; }
+        
+        pre { background: #000; padding: 15px; border-radius: 8px; overflow-x: auto; color: #a5b4fc; font-family: monospace; font-size: 0.85rem; height: 400px; overflow-y: auto; }
+        
+        button { width: 100%; background: var(--primary); color: #000; border: none; padding: 15px; font-size: 1.1rem; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.2s; margin-bottom: 30px; }
+        button:hover { background: #059669; color: white; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>⚙️ OpenAPI Codegen Simulator</h1>
+        <p class="subtitle">Fetching the live <code>openapi.json</code> spec from FastAPI and generating a Python class structure in real-time.</p>
+
+        <button id="btn-generate">Generate Python SDK</button>
+
+        <div class="grid">
+            <div class="panel">
+                <h3>1. Raw OpenAPI JSON (Input)</h3>
+                <pre id="json-input">// Click Generate...</pre>
+            </div>
+            <div class="panel">
+                <h3>2. Generated Python SDK (Output)</h3>
+                <pre id="code-output"># Click Generate to build client.py...</pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('btn-generate').addEventListener('click', async () => {
+            const jsonBox = document.getElementById('json-input');
+            const codeBox = document.getElementById('code-output');
+            
+            jsonBox.textContent = "Fetching openapi.json...";
+            codeBox.textContent = "Parsing...";
+
+            try {
+                // Fetch the live specification from our FastAPI backend
+                const res = await fetch('http://127.0.0.1:8000/openapi.json');
+                if (!res.ok) throw new Error("FastAPI server must be running on port 8000");
+                
+                const schema = await res.json();
+                jsonBox.textContent = JSON.stringify(schema, null, 2);
+
+                // Simulate exactly what generate_client.py does, but in JS
+                let pythonCode = "import httpx\nfrom typing import Any, Dict, List\n\nclass ApiClient:\n    def __init__(self, base_url='http://127.0.0.1:8000'):\n        self.client = httpx.Client(base_url=base_url)\n\n";
+
+                const paths = schema.paths || {};
+                for (const [path, methods] of Object.entries(paths)) {
+                    for (const [method, details] of Object.entries(methods)) {
+                        const opId = details.operationId || 'unknown';
+                        const pyMethodName = opId.replace(/-/g, '_').toLowerCase();
+                        
+                        let args = ["self"];
+                        let reqArgs = [`"${method.toUpperCase()}"`, `f"${path}"`];
+                        
+                        if (details.parameters) {
+                            details.parameters.forEach(p => {
+                                if (p.in === 'path') args.push(`${p.name}: str`);
+                            });
+                        }
+                        if (details.requestBody) {
+                            args.push("payload: Dict[str, Any]");
+                            reqArgs.push("json=payload");
+                        }
+
+                        pythonCode += `    def ${pyMethodName}(${args.join(', ')}):\n`;
+                        pythonCode += `        """\n        ${details.summary || ''}\n        """\n`;
+                        pythonCode += `        response = self.client.request(${reqArgs.join(', ')})\n`;
+                        pythonCode += `        response.raise_for_status()\n`;
+                        pythonCode += `        return response.json()\n\n`;
+                    }
+                }
+                
+                codeBox.textContent = pythonCode;
+
+            } catch (err) {
+                jsonBox.textContent = `Error: ${err.message}`;
+                codeBox.textContent = `Make sure uvicorn main:app is running.`;
+            }
+        });
+    </script>
+</body>
+</html>
