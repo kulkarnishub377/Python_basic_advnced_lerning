@@ -1,0 +1,7 @@
+{
+  "app_name": "MyApp",
+  "version": "1.0.0",
+  "theme": "dark",
+  "notifications_enabled": true,
+  "max_users": 50
+}
