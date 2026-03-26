@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Celery Background Workers</title>
+    <style>
+        :root {
+            --bg: #121212; --card: #1e1e1e; --primary: #00e676;
+            --text: #ffffff; --text-muted: #aaaaaa;
+        }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text); display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+        .card { background: var(--card); border-radius: 12px; padding: 40px; width: 100%; max-width: 500px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid #333; }
+        h1 { margin-bottom: 20px; color: var(--primary); }
+        p.desc { color: var(--text-muted); margin-bottom: 30px; font-size: 0.95rem; line-height: 1.5; }
+        
+        .form-group { margin-bottom: 20px; text-align: left; }
+        label { display: block; margin-bottom: 5px; font-size: 0.9rem; color: #ccc; }
+        input { width: 100%; padding: 12px; background: #2c2c2c; border: 1px solid #444; border-radius: 6px; color: white; transition: 0.3s; }
+        input:focus { border-color: var(--primary); outline: none; }
+        
+        button { background: var(--primary); color: #000; font-weight: bold; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; transition: 0.2s; width: 100%; font-size: 1rem; }
+        button:hover { filter: brightness(1.2); }
+        button:disabled { background: #444; color: #888; cursor: not-allowed; }
+
+        /* Progress UI */
+        .progress-container { margin-top: 30px; display: none; text-align: left; background: #2c2c2c; padding: 20px; border-radius: 8px; border: 1px solid #444; }
+        .progress-header { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.9rem; color: #ccc; }
+        .progress-bar-bg { width: 100%; height: 10px; background: #111; border-radius: 5px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; width: 0%; background: var(--primary); transition: width 0.3s ease; }
+        .status-text { margin-top: 15px; font-size: 0.85rem; color: var(--primary); font-family: monospace; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h1>⚙️ Async Celery Worker</h1>
+        <p class="desc">Trigger a heavy computation task. The API will respond immediately, and this UI will poll the background worker for live updates.</p>
+
+        <div class="form-group">
+            <label>Filename to process</label>
+            <input type="text" id="filename" value="massive_data_export.csv">
+        </div>
+        <button id="btn-trigger">Submit Async Task</button>
+
+        <div id="progress-container" class="progress-container">
+            <div class="progress-header">
+                <span id="task-state">PENDING...</span>
+                <span id="task-pct">0%</span>
+            </div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progress-fill"></div>
+            </div>
+            <div id="status-text" class="status-text">Task ID: -</div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:8000';
+        const btn = document.getElementById('btn-trigger');
+        const container = document.getElementById('progress-container');
+        const stateEl = document.getElementById('task-state');
+        const pctEl = document.getElementById('task-pct');
+        const fillEl = document.getElementById('progress-fill');
+        const statusEl = document.getElementById('status-text');
+
+        let intervalId = null;
+
+        btn.addEventListener('click', async () => {
+            const filename = document.getElementById('filename').value;
+            
+            // Reset UI
+            btn.disabled = true;
+            container.style.display = 'block';
+            fillEl.style.width = '0%';
+            pctEl.innerText = '0%';
+            stateEl.innerText = 'STARTING...';
+            
+            try {
+                // Spawn background task
+                const res = await fetch(`${API_BASE}/tasks/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ filename })
+                });
+                
+                const data = await res.json();
+                statusEl.innerText = `Task ID: ${data.task_id}`;
+                
+                // Start polling every 1 second
+                intervalId = setInterval(() => pollStatus(data.task_id), 1000);
+            } catch (err) {
+                console.error(err);
+                stateEl.innerText = 'FETCH ERROR';
+                btn.disabled = false;
+            }
+        });
+
+        async function pollStatus(taskId) {
+            try {
+                const res = await fetch(`${API_BASE}/tasks/${taskId}`);
+                const data = await res.json();
+
+                const state = data.state;
+                stateEl.innerText = state;
+                
+                if (data.progress !== undefined) {
+                    fillEl.style.width = `${data.progress}%`;
+                    pctEl.innerText = `${data.progress}%`;
+                }
+
+                if (state === 'SUCCESS') {
+                    clearInterval(intervalId);
+                    btn.disabled = false;
+                    statusEl.innerText = `Result: ${JSON.stringify(data.result)}`;
+                    fillEl.style.background = '#00e676';
+                } else if (state === 'FAILURE') {
+                    clearInterval(intervalId);
+                    btn.disabled = false;
+                    statusEl.innerText = `Error: ${data.error}`;
+                    fillEl.style.background = '#ff1744';
+                } else if (state === 'PROGRESS') {
+                    fillEl.style.background = '#29b6f6'; // blue while processing
+                }
+
+            } catch (err) {
+                console.error("Polling error", err);
+            }
+        }
+    </script>
+</body>
+</html>
