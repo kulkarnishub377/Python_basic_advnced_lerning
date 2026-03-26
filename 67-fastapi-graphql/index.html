@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GraphQL Client Dashboard</title>
+    <style>
+        :root {
+            --bg: #1a1a1a; --textarea-bg: #2d2d2d; --text: #f0f0f0;
+            --primary: #e10098; --primary-hover: #c00080;
+            --json-key: #9cdcfe; --json-string: #ce9178; --json-number: #b5cea8;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Consolas', 'Courier New', monospace; }
+        body { background: var(--bg); color: var(--text); padding: 30px; display: flex; flex-direction: column; height: 100vh; }
+        
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-family: sans-serif; }
+        h1 { color: var(--primary); }
+        .controls { display: flex; gap: 10px; }
+        button { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        button:hover { background: var(--primary-hover); }
+
+        .editor-container { display: flex; gap: 20px; flex: 1; min-height: 0; }
+        
+        .pane { flex: 1; display: flex; flex-direction: column; background: var(--textarea-bg); border-radius: 8px; border: 1px solid #444; overflow: hidden; }
+        .pane-header { background: #333; padding: 10px 15px; font-weight: bold; font-family: sans-serif; font-size: 0.9rem; color: #aaa; border-bottom: 1px solid #444; }
+        
+        textarea { flex: 1; background: transparent; color: #d4d4d4; border: none; padding: 15px; font-size: 1rem; outline: none; resize: none; }
+        pre { flex: 1; padding: 15px; overflow: auto; margin: 0; color: #d4d4d4; font-size: 0.95rem; }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🌌 Custom GraphQL GUI</h1>
+        <div class="controls">
+            <button onclick="loadExample('query')">Load Qry</button>
+            <button onclick="loadExample('mutation')">Load Mut</button>
+            <button id="btn-run" style="background: #2563eb;">▶ Run Query</button>
+        </div>
+    </header>
+
+    <div class="editor-container">
+        <div class="pane">
+            <div class="pane-header">QUERY INPUT (GraphQL Syntax)</div>
+            <textarea id="query-input" spellcheck="false">
+{
+  books {
+    title
+    year
+    author {
+      name
+      country
+    }
+  }
+}
+            </textarea>
+        </div>
+        <div class="pane">
+            <div class="pane-header">JSON RESPONSE</div>
+            <pre id="json-output">// Click "Run Query" to fetch data...</pre>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://127.0.0.1:8000/graphql';
+        
+        const examples = {
+            query: `{\n  authors {\n    name\n    books {\n      title\n    }\n  }\n}`,
+            mutation: `mutation {\n  createBook(title: "The Silmarillion", year: 1977, authorId: 2) {\n    id\n    title\n    author {\n      name\n    }\n  }\n}`
+        };
+
+        function loadExample(type) {
+            document.getElementById('query-input').value = examples[type];
+        }
+
+        document.getElementById('btn-run').addEventListener('click', async () => {
+            const query = document.getElementById('query-input').value;
+            const output = document.getElementById('json-output');
+            output.textContent = "Loading...";
+
+            try {
+                // GraphQL requests are simple POSTs with a JSON body containing {"query": "..."}
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: query })
+                });
+                
+                const data = await res.json();
+                output.textContent = JSON.stringify(data, null, 2);
+            } catch (err) {
+                output.textContent = `Error: ${err.message}`;
+            }
+        });
+    </script>
+</body>
+</html>
