@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Chat</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="chat-container">
+        <!-- Login Screen -->
+        <div id="login-screen" class="screen active">
+            <div class="login-card">
+                <div class="icon-wrapper">
+                    <i class="fa-brands fa-rocketchat"></i>
+                </div>
+                <h2>Welcome to ChatSocket</h2>
+                <p>Enter a username to join the global room</p>
+                <form id="join-form">
+                    <input type="text" id="username-input" placeholder="Your username..." required autocomplete="off" maxlength="15">
+                    <button type="submit" class="btn btn-primary">Join Chat</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Chat Screen -->
+        <div id="chat-screen" class="screen">
+            <header class="chat-header">
+                <div class="header-info">
+                    <h2>Global Room</h2>
+                    <span class="status"><span class="dot"></span> Connected as <b id="display-name">User</b></span>
+                </div>
+                <button id="btn-leave" class="btn btn-outline btn-sm">Leave</button>
+            </header>
+
+            <div class="chat-messages" id="messages-container">
+                <!-- Messages will appear here -->
+                <div class="system-message">Welcome to the chat room!</div>
+            </div>
+
+            <form id="message-form" class="chat-input-area">
+                <input type="text" id="message-input" placeholder="Type a message..." autocomplete="off" required>
+                <button type="submit" class="btn btn-primary btn-send">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
