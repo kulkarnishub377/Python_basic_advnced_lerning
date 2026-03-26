@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microservices Dashboard</title>
+    <style>
+        :root {
+            --bg: #0f172a; --card: #1e293b; --text: #f8fafc;
+            --primary: #f59e0b; --primary-hover: #d97706;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
+        body { background: var(--bg); color: var(--text); padding: 40px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 800px; width: 100%; }
+        h1 { margin-bottom: 10px; color: var(--primary); text-align: center; }
+        p.subtitle { text-align: center; color: #94a3b8; margin-bottom: 40px; }
+        
+        .services-diagram {
+            display: flex; justify-content: center; align-items: center; gap: 20px;
+            margin-bottom: 40px; background: rgba(0,0,0,0.2); padding: 20px; border-radius: 12px;
+        }
+        .node { background: var(--card); padding: 15px 30px; border-radius: 8px; border: 1px solid #334155; text-align: center; }
+        .node span { display: block; font-size: 0.8rem; color: #64748b; margin-top: 5px; }
+        .arrow { color: var(--primary); font-weight: bold; font-size: 1.5rem; }
+        
+        .controls { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; }
+        button { background: var(--primary); color: #000; font-weight: bold; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; transition: 0.2s; }
+        button:hover { background: var(--primary-hover); text-decoration: none; }
+
+        .result-card { background: var(--card); padding: 25px; border-radius: 12px; border: 1px solid #334155; }
+        pre { background: #000; padding: 15px; border-radius: 8px; color: #a5b4fc; overflow-x: auto; font-family: monospace; font-size: 0.95rem; }
+        
+        .error { color: #ef4444; border: 1px solid #ef4444; padding: 10px; border-radius: 6px; margin-bottom: 15px; background: rgba(239, 68, 68, 0.1); }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Microservices Stitched Data</h1>
+        <p class="subtitle">Frontend → Orders Service (8002) → Users Service (8001)</p>
+
+        <div class="services-diagram">
+            <div class="node">Browser <span>(This UI)</span></div>
+            <div class="arrow">→</div>
+            <div class="node">Orders SVC <span>Port 8002</span></div>
+            <div class="arrow">↔</div>
+            <div class="node">Users SVC <span>Port 8001</span></div>
+        </div>
+
+        <div class="controls">
+            <button onclick="fetchOrder(101)">Fetch Order 101 (Alice)</button>
+            <button onclick="fetchOrder(102)">Fetch Order 102 (Bob)</button>
+        </div>
+
+        <div class="result-card">
+            <h3>Aggregated Response</h3>
+            <p style="color: #64748b; font-size: 0.85rem; margin-bottom: 15px;">This single JSON object was stitched together from two different backend APIs running on two different ports.</p>
+            <div id="error-box" class="error" style="display: none;"></div>
+            <pre id="output">// Click a button above to load an order...</pre>
+        </div>
+    </div>
+
+    <script>
+        // We only speak to the Orders service. It inherently speaks to the Users service behind the scenes!
+        const API_BASE = 'http://127.0.0.1:8002';
+
+        async function fetchOrder(orderId) {
+            const outElement = document.getElementById('output');
+            const errBox = document.getElementById('error-box');
+            
+            outElement.textContent = "Loading...";
+            errBox.style.display = 'none';
+
+            try {
+                const res = await fetch(`${API_BASE}/orders/${orderId}`);
+                const data = await res.json();
+                
+                if (!res.ok) throw new Error(data.detail || 'Fetch failed');
+                
+                outElement.textContent = JSON.stringify(data, null, 2);
+            } catch (err) {
+                outElement.textContent = "";
+                errBox.style.display = 'block';
+                errBox.innerHTML = `<strong>Error:</strong> Failed to fetch from Orders Service on Port 8002. <br><br>Make sure you have two separate terminals running:<br>1. <code>cd users_service && uvicorn main:app --port 8001</code><br>2. <code>cd orders_service && uvicorn main:app --port 8002</code>`;
+            }
+        }
+    </script>
+</body>
+</html>
