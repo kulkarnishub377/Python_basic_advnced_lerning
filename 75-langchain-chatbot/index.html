@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Knowledge Bot</title>
+    <style>
+        :root{--bg:#0f0f0f;--chat-bg:#1a1a1a;--user:#3b82f6;--bot:#22c55e;--text:#f5f5f5;--muted:#737373;}
+        *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',sans-serif;}
+        body{background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;align-items:center;}
+        .container{max-width:700px;width:100%;flex:1;display:flex;flex-direction:column;padding:20px;}
+        h1{text-align:center;color:var(--bot);margin-bottom:15px;font-size:1.5rem;}
+        .chat-area{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding:10px 0;margin-bottom:15px;}
+        .msg{max-width:80%;padding:12px 16px;border-radius:16px;font-size:.95rem;line-height:1.5;}
+        .msg-user{align-self:flex-end;background:var(--user);border-bottom-right-radius:4px;}
+        .msg-bot{align-self:flex-start;background:var(--chat-bg);border:1px solid #333;border-bottom-left-radius:4px;}
+        .msg-bot .sources{font-size:.75rem;color:var(--muted);margin-top:8px;border-top:1px solid #333;padding-top:6px;}
+        .input-row{display:flex;gap:10px;}
+        input{flex:1;padding:14px 18px;border:1px solid #333;border-radius:12px;background:var(--chat-bg);color:var(--text);font-size:1rem;outline:none;}
+        input:focus{border-color:var(--bot);}
+        button{padding:14px 22px;background:var(--bot);color:#000;border:none;border-radius:12px;font-weight:bold;cursor:pointer;font-size:1rem;}
+        button:hover{filter:brightness(1.1);}
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>AI Knowledge Bot</h1>
+    <div class="chat-area" id="chat">
+        <div class="msg msg-bot">Ask me anything about Python, FastAPI, Redis, Kafka, gRPC, or Docker. My answers come from a local knowledge base using RAG.</div>
+    </div>
+    <div class="input-row">
+        <input id="input" type="text" placeholder="Ask a question..." autofocus>
+        <button onclick="send()">Send</button>
+    </div>
+</div>
+<script>
+    const API='http://127.0.0.1:8000';
+    const chat=document.getElementById('chat');
+    const inp=document.getElementById('input');
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter')send();});
+
+    function addMsg(text,type,sources){
+        const d=document.createElement('div');
+        d.className='msg msg-'+type;
+        let html=text;
+        if(sources&&sources.length){html+=`<div class="sources">Sources: ${sources.join(', ')}</div>`;}
+        d.innerHTML=html;
+        chat.appendChild(d);
+        chat.scrollTop=chat.scrollHeight;
+    }
+
+    async function send(){
+        const q=inp.value.trim();
+        if(!q)return;
+        addMsg(q,'user');
+        inp.value='';
+        try{
+            const res=await fetch(`${API}/chat`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q})});
+            const data=await res.json();
+            addMsg(data.answer,'bot',data.sources);
+        }catch(e){addMsg('Error: '+e.message,'bot');}
+    }
+</script>
+</body>
+</html>

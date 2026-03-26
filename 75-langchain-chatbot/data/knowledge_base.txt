@@ -1,0 +1,19 @@
+Python is a high-level, interpreted programming language created by Guido van Rossum in 1991. It emphasizes code readability with its notable use of significant indentation. Python supports multiple programming paradigms, including structured, object-oriented, and functional programming.
+
+Python is widely used in web development with frameworks like Django and Flask. It powers data science workflows through libraries such as Pandas, NumPy, and Matplotlib. Machine learning engineers use Python with TensorFlow, PyTorch, and scikit-learn.
+
+FastAPI is a modern, high-performance web framework for building APIs with Python based on standard Python type hints. Its key features include automatic data validation via Pydantic, auto-generated OpenAPI documentation, and native support for async/await concurrency patterns.
+
+LangChain is a framework for developing applications powered by large language models (LLMs). It provides abstractions for prompt management, memory, chains, and agents. LangChain supports retrieval-augmented generation (RAG) by integrating vector stores like FAISS and Chroma with LLM calls.
+
+Redis is an open-source, in-memory data structure store used as a database, cache, message broker, and streaming engine. It supports data structures such as strings, hashes, lists, sets, and sorted sets. Redis is commonly used for caching API responses and session management.
+
+Docker is a platform for developing, shipping, and running applications in containers. Containers package an application with all its dependencies, ensuring consistent behavior across different environments. Docker Compose allows defining and running multi-container applications.
+
+gRPC is a high-performance, open-source RPC framework developed by Google. It uses Protocol Buffers for serialization, which is faster and more compact than JSON. gRPC supports four communication patterns: unary, server streaming, client streaming, and bidirectional streaming.
+
+Elasticsearch is a distributed, RESTful search and analytics engine. It excels at full-text search with features like fuzzy matching, relevance scoring, and faceted search. Elasticsearch uses an inverted index data structure for fast lookups.
+
+Apache Kafka is a distributed event streaming platform used for building real-time data pipelines. It operates on a publish-subscribe model where producers send messages to topics and consumers read from them. Kafka guarantees at-least-once delivery and supports message partitioning for parallel processing.
+
+WebRTC (Web Real-Time Communication) is a technology that enables peer-to-peer communication directly between browsers without requiring a central server for data transfer. It uses a signaling server only for the initial connection handshake (SDP exchange and ICE candidate negotiation).
