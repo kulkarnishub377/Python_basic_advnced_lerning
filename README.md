@@ -3,7 +3,7 @@
   <p><i>A structured collection of Python projects designed to take you from beginner to expert level.</i></p>
   <p>
     <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python"/>
-    <img src="https://img.shields.io/badge/Projects-70-green?style=for-the-badge" alt="70 Projects"/>
+    <img src="https://img.shields.io/badge/Projects-80-green?style=for-the-badge" alt="80 Projects"/>
     <img src="https://img.shields.io/badge/Status-Complete-brightgreen?style=for-the-badge" alt="Complete"/>
     <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="MIT License"/>
     <img src="https://img.shields.io/badge/Contributions-Welcome-orange?style=for-the-badge" alt="Contributions"/>
@@ -17,7 +17,7 @@
 This repository contains **Python projects** designed to take you from beginner to advanced developer.
 Every project contains pure Python code  with its own `README.md` and `requirements.txt`.
 
-The projects cover 8 **progressive phases**: basic syntax, data structures, OOP, file I/O, APIs, async programming, and full-stack architectures.
+The projects cover 9 **progressive phases**: basic syntax, data structures, OOP, file I/O, APIs, async programming, full-stack architectures, and elite enterprise systems.
 
 ---
 
@@ -95,6 +95,16 @@ The projects cover 8 **progressive phases**: basic syntax, data structures, OOP,
 | 68 | [Microservices with FastAPI](68-fastapi-microservices/)          | FastAPI, Microservices, httpx              | Expert       |
 | 69 | [FastAPI Admin Dashboard](69-fastapi-admin/)                     | FastAPI, sqladmin, CMS                     | Expert       |
 | 70 | [OpenAPI Client Generator](70-fastapi-openapi-client/)           | CodeGen, OpenAPI, HTTP Client              | Expert       |
+| 71 | [Redis Caching & Invalidation](71-redis-caching/)               | Redis, Cache-Aside, TTL                    | Expert       |
+| 72 | [Elasticsearch Full-Text Search](72-elasticsearch-search/)      | Elasticsearch, Fuzzy Match, Relevance      | Expert       |
+| 73 | [Apache Kafka Event Streaming](73-kafka-streaming/)             | Kafka, Producer/Consumer, Real-Time        | Expert       |
+| 74 | [gRPC Python Microservice](74-grpc-service/)                    | gRPC, Protocol Buffers, Binary RPC         | Expert       |
+| 75 | [LangChain AI Chatbot](75-langchain-chatbot/)                   | LangChain, RAG, Vector Store               | Expert       |
+| 76 | [Playwright Async Web Scraper](76-playwright-scraper/)          | Playwright, Headless Browser, Async        | Expert       |
+| 77 | [Video Streaming Server](77-video-streaming/)                   | StreamingResponse, Byte-Range, HTTP 206    | Expert       |
+| 78 | [Geospatial Nearby Search](78-geospatial-api/)                  | Haversine, GeoJSON, Spatial Filtering      | Expert       |
+| 79 | [WebRTC P2P Signaling](79-webrtc-signaling/)                    | WebRTC, SDP, ICE, Peer-to-Peer             | Expert       |
+| 80 | [Docker CI/CD Pipeline](80-docker-cicd/)                        | Docker, GitHub Actions, Compose            | Expert       |
 
 ---
 
@@ -145,6 +155,7 @@ XX-project-name/
 | 6     | Advanced Concepts (threading, async, databases)        | 43-49    |
 | 7     | Expert Projects (full-stack, ML, frameworks)           | 50-60    |
 | 8     | Advanced FastAPI Series (GraphQL, microservices, auth) | 61-70    |
+| 9     | Elite Architectures (gRPC, Kafka, WebRTC, Docker)     | 71-80    |
 
 ## Contributing
 
