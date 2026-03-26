@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>WebRTC Video Chat</title>
+    <style>
+        :root{--bg:#030712;--card:#111827;--text:#f9fafb;--accent:#8b5cf6;--green:#22c55e;--border:#1f2937;}
+        *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',sans-serif;}
+        body{background:var(--bg);color:var(--text);padding:20px;display:flex;flex-direction:column;align-items:center;}
+        h1{color:var(--accent);margin-bottom:15px;}
+        .videos{display:flex;gap:15px;margin-bottom:20px;flex-wrap:wrap;justify-content:center;}
+        video{width:380px;height:285px;border-radius:12px;background:#000;border:2px solid var(--border);}
+        .controls{display:flex;gap:12px;margin-bottom:20px;}
+        button{padding:12px 22px;border:none;border-radius:8px;font-weight:bold;cursor:pointer;font-size:.95rem;}
+        .btn-start{background:var(--green);color:#000;}
+        .btn-call{background:var(--accent);color:#fff;}
+        .status{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 20px;text-align:center;font-size:.9rem;color:#9ca3af;max-width:780px;width:100%;}
+        .label{position:absolute;bottom:8px;left:8px;background:rgba(0,0,0,.7);padding:3px 10px;border-radius:6px;font-size:.8rem;}
+        .vid-wrap{position:relative;display:inline-block;}
+    </style>
+</head>
+<body>
+    <h1>WebRTC P2P Video Chat</h1>
+    <div class="videos">
+        <div class="vid-wrap"><video id="local" autoplay muted playsinline></video><div class="label">You (Local)</div></div>
+        <div class="vid-wrap"><video id="remote" autoplay playsinline></video><div class="label">Remote Peer</div></div>
+    </div>
+    <div class="controls">
+        <button class="btn-start" onclick="startCamera()">Start Camera</button>
+        <button class="btn-call" onclick="makeCall()">Call Peer</button>
+    </div>
+    <div class="status" id="status">Click "Start Camera" to begin, then open this page in another tab.</div>
+<script>
+    const SIGNAL='ws://127.0.0.1:8000/ws/default';
+    let ws,pc,localStream,iceServers=[{urls:'stun:stun.l.google.com:19302'}];
+    const stat=s=>document.getElementById('status').textContent=s;
+
+    async function startCamera(){
+        try{
+            localStream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
+            document.getElementById('local').srcObject=localStream;
+            stat('Camera active. Connecting to signaling server...');
+            connectSignaling();
+        }catch(e){stat('Camera error: '+e.message);}
+    }
+
+    function connectSignaling(){
+        ws=new WebSocket(SIGNAL);
+        ws.onopen=()=>stat('Connected to signaling server. Open another tab and click Call.');
+        ws.onmessage=async e=>{
+            const msg=JSON.parse(e.data);
+            if(msg.type==='welcome'){iceServers=msg.ice_servers||iceServers;stat(`Joined room. Peers: ${msg.peers_in_room}`);}
+            if(msg.type==='peer_joined')stat('Another peer joined! Click "Call Peer" to connect.');
+            if(msg.type==='offer'){await handleOffer(msg);}
+            if(msg.type==='answer'){await pc.setRemoteDescription({type:'answer',sdp:msg.sdp});}
+            if(msg.type==='candidate'&&pc){await pc.addIceCandidate(msg.candidate);}
+        };
+    }
+
+    function createPC(){
+        pc=new RTCPeerConnection({iceServers});
+        localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));
+        pc.onicecandidate=e=>{if(e.candidate)ws.send(JSON.stringify({type:'candidate',candidate:e.candidate}));};
+        pc.ontrack=e=>{document.getElementById('remote').srcObject=e.streams[0];stat('P2P connected! Video streaming directly between peers.');};
+        pc.oniceconnectionstatechange=()=>stat('ICE state: '+pc.iceConnectionState);
+    }
+
+    async function makeCall(){
+        createPC();
+        const offer=await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        ws.send(JSON.stringify({type:'offer',sdp:offer.sdp}));
+        stat('SDP offer sent. Waiting for answer...');
+    }
+
+    async function handleOffer(msg){
+        createPC();
+        await pc.setRemoteDescription({type:'offer',sdp:msg.sdp});
+        const answer=await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        ws.send(JSON.stringify({type:'answer',sdp:answer.sdp}));
+        stat('SDP answer sent. Establishing P2P...');
+    }
+</script>
+</body>
+</html>
