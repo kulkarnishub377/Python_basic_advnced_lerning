@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Geospatial Search</title>
+    <style>
+        :root{--bg:#0f172a;--card:#1e293b;--text:#f1f5f9;--accent:#f59e0b;--border:#334155;}
+        *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',sans-serif;}
+        body{background:var(--bg);color:var(--text);padding:30px;display:flex;flex-direction:column;align-items:center;}
+        .container{max-width:800px;width:100%;}
+        h1{text-align:center;color:var(--accent);margin-bottom:20px;}
+        .form{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;justify-content:center;}
+        input{padding:12px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);width:140px;outline:none;}
+        button{padding:12px 20px;background:var(--accent);color:#000;border:none;border-radius:8px;font-weight:bold;cursor:pointer;}
+        .results{display:flex;flex-direction:column;gap:10px;}
+        .poi{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;display:flex;justify-content:space-between;align-items:center;}
+        .poi .name{font-weight:bold;}
+        .poi .dist{color:var(--accent);font-size:1.1rem;font-weight:bold;}
+        .poi .cat{font-size:.8rem;color:#94a3b8;background:rgba(148,163,184,.1);padding:2px 8px;border-radius:12px;}
+        .empty{text-align:center;color:#64748b;padding:30px;}
+        .summary{text-align:center;color:#94a3b8;margin-bottom:15px;font-size:.9rem;}
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Geospatial Nearby Search</h1>
+    <div class="form">
+        <input id="lat" type="number" step="0.001" placeholder="Latitude" value="18.94">
+        <input id="lon" type="number" step="0.001" placeholder="Longitude" value="72.83">
+        <input id="rad" type="number" step="1" placeholder="Radius (km)" value="15">
+        <button onclick="search()">Search Nearby</button>
+    </div>
+    <div class="summary" id="summary"></div>
+    <div class="results" id="results"><div class="empty">Enter coordinates and click Search</div></div>
+</div>
+<script>
+    const API='http://127.0.0.1:8000';
+    async function search(){
+        const lat=document.getElementById('lat').value;
+        const lon=document.getElementById('lon').value;
+        const rad=document.getElementById('rad').value;
+        const box=document.getElementById('results');
+        box.innerHTML='<div class="empty">Searching...</div>';
+        try{
+            const res=await fetch(`${API}/nearby?lat=${lat}&lon=${lon}&radius_km=${rad}`);
+            const d=await res.json();
+            document.getElementById('summary').textContent=`Found ${d.total_found} locations within ${d.radius_km} km`;
+            if(!d.results.length){box.innerHTML='<div class="empty">No locations found in this radius.</div>';return;}
+            box.innerHTML=d.results.map(r=>`
+                <div class="poi">
+                    <div><span class="name">${r.name}</span> <span class="cat">${r.category}</span></div>
+                    <div class="dist">${r.distance_km} km</div>
+                </div>
+            `).join('');
+        }catch(e){box.innerHTML=`<div class="empty">Error: ${e.message}</div>`;}
+    }
+</script>
+</body>
+</html>
