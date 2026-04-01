@@ -3,7 +3,7 @@
   <p><i>A structured collection of Python projects designed to take you from beginner to expert level.</i></p>
   <p>
     <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python"/>
-    <img src="https://img.shields.io/badge/Projects-80-green?style=for-the-badge" alt="80 Projects"/>
+    <img src="https://img.shields.io/badge/Projects-85-green?style=for-the-badge" alt="85 Projects"/>
     <img src="https://img.shields.io/badge/Status-Complete-brightgreen?style=for-the-badge" alt="Complete"/>
     <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="MIT License"/>
     <img src="https://img.shields.io/badge/Contributions-Welcome-orange?style=for-the-badge" alt="Contributions"/>
@@ -105,6 +105,11 @@ The projects cover 9 **progressive phases**: basic syntax, data structures, OOP,
 | 78 | [Geospatial Nearby Search](78-geospatial-api/)                  | Haversine, GeoJSON, Spatial Filtering      | Expert       |
 | 79 | [WebRTC P2P Signaling](79-webrtc-signaling/)                    | WebRTC, SDP, ICE, Peer-to-Peer             | Expert       |
 | 80 | [Docker CI/CD Pipeline](80-docker-cicd/)                        | Docker, GitHub Actions, Compose            | Expert       |
+| 81 | [Distributed Tracing](81-distributed-tracing/)                  | OpenTelemetry, FastAPI, Jaeger             | Expert       |
+| 82 | [Multi-Agent LLM Swarm (Mock)](82-multi-agent-llm-swarm/)       | LangGraph, Agent State, Streamlit          | Expert       |
+| 83 | [Event Sourcing and CQRS](83-event-sourcing-cqrs/)              | Architecture, Event Log, Read/Write Models | Expert       |
+| 84 | [Serverless AWS Lambda](84-serverless-aws-lambda/)              | AWS SAM, Mangum, Serverless FastAPI        | Expert       |
+| 85 | [Custom K8s Operator](85-kubernetes-operator/)                  | Kopf, Kubernetes API, CRDs                 | Expert       |
 
 ---
 
@@ -156,6 +161,7 @@ XX-project-name/
 | 7     | Expert Projects (full-stack, ML, frameworks)           | 50-60    |
 | 8     | Advanced FastAPI Series (GraphQL, microservices, auth) | 61-70    |
 | 9     | Elite Architectures (gRPC, Kafka, WebRTC, Docker)     | 71-80    |
+| 10    | Cloud-Native, Distributed Systems & AI                | 81-85    |
 
 ## Contributing
 
