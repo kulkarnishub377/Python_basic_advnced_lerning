@@ -1,0 +1,36 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: epycapps.epyc.io
+spec:
+  group: epyc.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                image:
+                  type: string
+                replicas:
+                  type: integer
+  scope: Namespaced
+  names:
+    plural: epycapps
+    singular: epycapp
+    kind: EpycApp
+    shortNames:
+    - ea
+---
+apiVersion: epyc.io/v1
+kind: EpycApp
+metadata:
+  name: my-first-app
+spec:
+  image: "python:3.9-slim"
+  replicas: 3
